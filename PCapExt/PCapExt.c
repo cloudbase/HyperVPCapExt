@@ -5,7 +5,8 @@ Copyright(c) Cloudbase Solutions Srl.All Rights Reserved.
 #include "precomp.h"
 #include "pcap.h"
 
-HANDLE g_CaptureFileHandle = NULL;
+HANDLE g_CaptureFileHandle;
+ERESOURCE g_CaptureFileResource;
 
 #define EPOCH_OFFSET 11644473600
 #define BUFFER_SIZE 30
@@ -24,6 +25,15 @@ typedef struct PcapRecordWorkItemData_s
 } PcapRecordWorkItemData;
 
 
+VOID InitPcapCapture()
+{
+    ExInitializeResourceLite(&g_CaptureFileResource);
+}
+
+VOID EndPcapCapture()
+{
+    ExDeleteResourceLite(&g_CaptureFileResource);
+}
 
 VOID CreatePcapCaptureFile()
 {
@@ -73,11 +83,17 @@ VOID CreatePcapCaptureFile()
 
 VOID ClosePcapCaptureFile()
 {
+    KeEnterCriticalRegion();
+    ExAcquireResourceExclusiveLite(&g_CaptureFileResource, TRUE);
+
     if (g_CaptureFileHandle)
     {
         ZwClose(g_CaptureFileHandle);
         g_CaptureFileHandle = NULL;
     }
+
+    ExReleaseResourceLite(&g_CaptureFileResource);
+    KeLeaveCriticalRegion();
 }
 
 VOID WritePcapRecordWorkItem(_In_ PDEVICE_OBJECT DeviceObject, _In_opt_  PVOID Context)
@@ -87,11 +103,17 @@ VOID WritePcapRecordWorkItem(_In_ PDEVICE_OBJECT DeviceObject, _In_opt_  PVOID C
     IO_STATUS_BLOCK ioStatusBlock = { 0 };
     PcapRecordWorkItemData* pPcapRecordWorkItemData = Context;
 
+    KeEnterCriticalRegion();
+    ExAcquireResourceExclusiveLite(&g_CaptureFileResource, TRUE);
+
     // Ignore write errors
     if (g_CaptureFileHandle)
         ZwWriteFile(g_CaptureFileHandle, NULL, NULL, NULL, &ioStatusBlock,
                     pPcapRecordWorkItemData->Buffer,
                     pPcapRecordWorkItemData->BufferLen, NULL, NULL);
+
+    ExReleaseResourceLite(&g_CaptureFileResource);
+    KeLeaveCriticalRegion();
 
     IoFreeWorkItem(pPcapRecordWorkItemData->pWorkItem);
     ExFreePool(pPcapRecordWorkItemData);
