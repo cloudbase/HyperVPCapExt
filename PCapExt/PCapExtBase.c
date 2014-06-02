@@ -13,6 +13,7 @@ ULONG SxExtOidRequestId = 'paCP';
 NDIS_STATUS
 SxExtInitialize()
 {
+    InitPcapCapture();
     CreatePcapCaptureFile();
     return NDIS_STATUS_SUCCESS;
 }

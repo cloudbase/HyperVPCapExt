@@ -2,6 +2,7 @@
 
 #include <ndis.h>
 
+VOID InitPcapCapture();
 VOID CreatePcapCaptureFile();
 VOID ClosePcapCaptureFile();
 VOID WritePcapRecordWorkItem(_In_ PDEVICE_OBJECT DeviceObject, _In_opt_ PVOID Context);
