@@ -23,6 +23,7 @@ VOID
 SxExtUninitialize()
 {
     ClosePcapCaptureFile();
+    EndPcapCapture();
     return;
 }
 

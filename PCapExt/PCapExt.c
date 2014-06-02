@@ -30,6 +30,11 @@ VOID InitPcapCapture()
     ExInitializeResourceLite(&g_CaptureFileResource);
 }
 
+VOID EndPcapCapture()
+{
+    ExDeleteResourceLite(&g_CaptureFileResource);
+}
+
 VOID CreatePcapCaptureFile()
 {
     UNICODE_STRING     uniName;
@@ -78,11 +83,17 @@ VOID CreatePcapCaptureFile()
 
 VOID ClosePcapCaptureFile()
 {
+    KeEnterCriticalRegion();
+    ExAcquireResourceExclusiveLite(&g_CaptureFileResource, TRUE);
+
     if (g_CaptureFileHandle)
     {
         ZwClose(g_CaptureFileHandle);
         g_CaptureFileHandle = NULL;
     }
+
+    ExReleaseResourceLite(&g_CaptureFileResource);
+    KeLeaveCriticalRegion();
 }
 
 VOID WritePcapRecordWorkItem(_In_ PDEVICE_OBJECT DeviceObject, _In_opt_  PVOID Context)
