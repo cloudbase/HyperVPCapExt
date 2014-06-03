@@ -204,6 +204,7 @@
     <ClInclude Exclude="@(ClInclude)" Include="pcap.h" />
     <ClInclude Include="Header.h" />
     <ClInclude Include="PCapExt.h" />
+    <ClInclude Include="resource.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
 </Project>
